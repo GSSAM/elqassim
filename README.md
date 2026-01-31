@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# دليل تشغيل منصة التميز التعليمية (مجانية 100%)
 
-This contains everything you need to run your app locally.
+هذه المنصة مصممة لتعمل بتكلفة **0 دولار** باستخدام الموارد المجانية من Google Firebase و GitHub.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1lLe3Tl01oEndcpqg9g0XUcN2QjS_ztZK
+### أولاً: الخطة المجانية (Firebase Spark Plan)
+عند إنشاء حسابك في Firebase، تأكد أنك تستخدم خطة **Spark**. 
+* **Firestore:** تمنحك 50 ألف قراءة يومياً مجاناً.
+* **Auth:** تمنحك 50 ألف مستخدم شهرياً مجاناً.
+* **لا تضف أي بيانات دفع**؛ النظام سيعمل بشكل مثالي طالما أنك ضمن هذه الحدود الضخمة.
 
-## Run Locally
+### ثانياً: إعداد Firebase
+1. قم بإنشاء مشروع في [Firebase Console](https://console.firebase.google.com/).
+2. فعل **Authentication** (البريد وكلمة المرور).
+3. فعل **Firestore Database** (اختر وضع Test Mode في البداية ثم طبق القواعد أدناه).
+4. انسخ إعدادات التطبيق (Firebase Config) إلى ملف `firebaseConfig.ts`.
 
-**Prerequisites:**  Node.js
+### ثالثاً: إعداد قواعد الحماية (Firestore Rules)
+هذه الخطوة ضرورية لمنع التلاعب بالدرجات أو الرتب:
+1. اذهب إلى قسم **Firestore Database** -> **Rules**.
+2. انسخ محتوى الملف `security/firestore.rules` وانصقه هناك ثم اضغط **Publish**.
 
+### رابعاً: الدخول الأول للمدير (Admin)
+لأغراض الأمان، حساب المدير لا يتم إنشاؤه من واجهة التسجيل العادية:
+1. افتح الموقع بعد رفعه أو تشغيله.
+2. اكتب في البريد: `admin`.
+3. اكتب في كلمة المرور: `startsq@1985`.
+4. اضغط "دخول"، ستظهر رسالة تخبرك أن الحساب غير موجود، اضغط على زر **"تهيئة الآن"** الذي سيظهر باللون الأحمر.
+5. سيقوم النظام بإنشاء حساب المدير وتفعيله تلقائياً.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### خامساً: رفع الموقع على GitHub Pages
+1. ارفع الكود على مستودع (Repository) في GitHub.
+2. اذهب إلى **Settings** -> **Pages**.
+3. اختر فرع `main` واضغط Save.
+4. سيكون رابط موقعك متاحاً للطلاب مجاناً للأبد.

@@ -3,25 +3,24 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Replace with your actual Firebase config
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+/**
+ * تأكد من استبدال القيم أدناه بمفاتيح مشروعك الحقيقية من Firebase Console
+ */
 const firebaseConfig = {
-  apiKey: "AIzaSyDfoaKaJDZBf99IKuhsnEdIQp8Re887G6c",
-  authDomain: "al-tamayuz-platform.firebaseapp.com",
-  projectId: "al-tamayuz-platform",
-  storageBucket: "al-tamayuz-platform.firebasestorage.app",
-  messagingSenderId: "831767903372",
-  appId: "1:831767903372:web:61d9e59cdf4a4d76eb4fa9",
-  measurementId: "G-GEV687KDKK"
+  apiKey: "AIzaSy...", // ضع هنا مفتاح API الفعلي
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
 };
 
-// Initialize Firebase
+// فحص بسيط لمنع الانهيار إذا لم يتم وضع المفاتيح
+if (firebaseConfig.apiKey.includes("AIzaSy") === false) {
+  console.warn("تنبيه: يجب وضع مفاتيح Firebase الحقيقية في ملف firebaseConfig.ts لكي يعمل التطبيق.");
+}
+
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+export const auth = getAuth(app);
+export const db = getFirestore(app);
