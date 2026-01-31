@@ -16,6 +16,7 @@ export interface UserProfile {
   role: UserRole;
   level: EducationLevel;
   isActive: boolean;
+  activationCode?: string | null;
   activatedAt?: any;
   createdAt: any;
 }
@@ -26,4 +27,14 @@ export interface Section {
   description: string;
   allowedRoles: UserRole[];
   allowedLevels: EducationLevel[];
+  icon?: string;
+}
+
+export interface ActivationCode {
+  code: string;
+  level: EducationLevel;
+  isUsed: boolean;
+  createdAt: string;
+  usedBy?: string;
+  usedAt?: any;
 }

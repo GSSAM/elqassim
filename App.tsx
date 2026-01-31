@@ -26,6 +26,7 @@ const App: React.FC = () => {
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile);
           } else {
+            // Fallback if auth exists but firestore doc doesn't (rare)
             setProfile(null);
           }
         } catch (error) {
@@ -39,8 +40,9 @@ const App: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen message="جاري التحميل..." />;
 
+  // Auth Flow
   if (!user) {
     return view === 'login' ? (
       <Login onToggle={() => setView('register')} />
@@ -49,14 +51,17 @@ const App: React.FC = () => {
     );
   }
 
-  if (!profile) return <LoadingScreen message="بانتظار إعداد البيانات..." />;
+  // Profile Loading
+  if (!profile) return <LoadingScreen message="جاري إعداد الملف الشخصي..." />;
 
-  if (!profile.isActive) {
+  // Activation Flow (Skip for admins)
+  if (!profile.isActive && profile.role !== 'admin') {
     return <Activation profile={profile} onActivated={() => window.location.reload()} />;
   }
 
+  // Main App
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar profile={profile} />
       <main className="flex-grow container mx-auto px-4 py-8">
         {profile.role === 'admin' ? (
@@ -65,7 +70,7 @@ const App: React.FC = () => {
           <Dashboard profile={profile} />
         )}
       </main>
-      <footer className="bg-white border-t py-6 text-center text-gray-400 text-sm">
+      <footer className="bg-white border-t py-6 text-center text-slate-400 text-sm">
         جميع الحقوق محفوظة لمنصة التميز التعليمية &copy; {new Date().getFullYear()}
       </footer>
     </div>
