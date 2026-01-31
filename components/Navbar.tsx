@@ -2,14 +2,12 @@ import React from 'react';
 import { auth } from '../firebaseConfig';
 import { UserProfile } from '../types';
 
-interface Props { profile: UserProfile; }
-
-const Navbar: React.FC<Props> = ({ profile }) => {
+const Navbar: React.FC<{ profile: UserProfile }> = ({ profile }) => {
   return (
     <nav className="bg-white border-b h-20 sticky top-0 z-50">
       <div className="container mx-auto px-4 h-full flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl shadow-lg">ت</div>
+          <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center font-bold text-xl">ت</div>
           <span className="font-bold text-slate-800 text-xl hidden sm:block">منصة التميز</span>
         </div>
         <div className="flex items-center gap-4">

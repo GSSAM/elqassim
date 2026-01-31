@@ -29,7 +29,7 @@ const App: React.FC = () => {
             setProfile(null);
           }
         } catch (error) {
-          console.error("Auth profile error:", error);
+          console.error("Auth error:", error);
         }
       } else {
         setProfile(null);
@@ -49,7 +49,7 @@ const App: React.FC = () => {
     );
   }
 
-  if (!profile) return <LoadingScreen message="جاري إعداد حسابك..." />;
+  if (!profile) return <LoadingScreen message="بانتظار إعداد البيانات..." />;
 
   if (!profile.isActive) {
     return <Activation profile={profile} onActivated={() => window.location.reload()} />;

@@ -17,18 +17,16 @@ const Login: React.FC<Props> = ({ onToggle }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
-    // دعم كلمة "admin" للدخول السريع للمسؤول
     const finalEmail = email.trim().toLowerCase() === 'admin' ? 'admin@tamayuz.local' : email;
 
     try {
       await signInWithEmailAndPassword(auth, finalEmail, password);
     } catch (err: any) {
       if (err.code === 'auth/user-not-found' && email.toLowerCase() === 'admin') {
-        setError('حساب المدير غير موجود. هل تود تهيئة النظام الآن؟');
+        setError('حساب المدير غير موجود. هل تود تهيئة النظام؟');
         setSetupMode(true);
       } else {
-        setError('خطأ في البريد أو كلمة المرور.');
+        setError('خطأ في الدخول. تأكد من البيانات.');
       }
     } finally {
       setLoading(false);
@@ -49,57 +47,31 @@ const Login: React.FC<Props> = ({ onToggle }) => {
         isActive: true,
         createdAt: serverTimestamp()
       });
-      alert('تم إنشاء حساب المدير بنجاح!');
+      alert('تم إنشاء حساب المدير!');
       window.location.reload();
     } catch (err: any) {
-      setError('فشلت التهيئة: ' + err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-700 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-blue-600 px-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-right">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl font-bold">ت</div>
-          <h1 className="text-3xl font-bold text-gray-800">منصة التميز</h1>
-        </div>
-
+        <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">تسجيل الدخول</h1>
         {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 text-sm flex flex-col gap-3">
+          <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-6 text-sm flex flex-col gap-2">
             <span>{error}</span>
-            {setupMode && (
-              <button onClick={setupAdmin} className="bg-red-600 text-white font-bold py-2 rounded-lg">تهيئة حساب المدير</button>
-            )}
+            {setupMode && <button onClick={setupAdmin} className="bg-red-600 text-white font-bold py-2 rounded-lg">تهيئة المدير</button>}
           </div>
         )}
-
         <form onSubmit={handleLogin} className="space-y-6">
-          <input
-            type="text"
-            required
-            className="w-full px-5 py-4 rounded-xl border-2 border-gray-50 focus:border-blue-500 outline-none"
-            placeholder="البريد الإلكتروني أو admin"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            required
-            className="w-full px-5 py-4 rounded-xl border-2 border-gray-50 focus:border-blue-500 outline-none"
-            placeholder="كلمة المرور"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button disabled={loading} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95">
-            {loading ? 'جاري التحقق...' : 'دخول'}
-          </button>
+          <input type="text" required className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 outline-none focus:border-blue-500" placeholder="البريد أو admin" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" required className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 outline-none focus:border-blue-500" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all">{loading ? 'جاري التحقق...' : 'دخول'}</button>
         </form>
-
-        <p className="text-center mt-8 text-sm text-gray-500">
-          ليس لديك حساب؟ <button onClick={onToggle} className="text-blue-700 font-bold hover:underline">سجل الآن</button>
-        </p>
+        <p className="text-center mt-8 text-sm text-gray-500">ليس لديك حساب؟ <button onClick={onToggle} className="text-blue-600 font-bold hover:underline">سجل هنا</button></p>
       </div>
     </div>
   );
