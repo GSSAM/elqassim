@@ -32,7 +32,6 @@ const AdminPanel: React.FC = () => {
     setLoading(true);
     try {
       const codeId = newCode.trim().toUpperCase();
-      // Check if exists logic could be added here, but setDoc overwrites which is okay for now or returns error if rules prevent
       await setDoc(doc(db, 'activationCodes', codeId), {
         code: codeId,
         level: codeLevel,

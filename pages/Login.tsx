@@ -18,7 +18,7 @@ const Login: React.FC<Props> = ({ onToggle }) => {
     setLoading(true);
     setError('');
     
-    // Admin Shortcut
+    // Admin Shortcut convenience
     const finalEmail = email.trim().toLowerCase() === 'admin' ? 'admin@tamayuz.local' : email;
 
     try {

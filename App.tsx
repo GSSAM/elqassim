@@ -26,7 +26,7 @@ const App: React.FC = () => {
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile);
           } else {
-            // Fallback if auth exists but firestore doc doesn't (rare)
+            // User authenticated but no profile found (rare edge case)
             setProfile(null);
           }
         } catch (error) {
@@ -51,10 +51,10 @@ const App: React.FC = () => {
     );
   }
 
-  // Profile Loading
+  // Profile Loading (User logged in but profile fetch pending)
   if (!profile) return <LoadingScreen message="جاري إعداد الملف الشخصي..." />;
 
-  // Activation Flow (Skip for admins)
+  // Activation Flow (Skip for admins, mandatory for students)
   if (!profile.isActive && profile.role !== 'admin') {
     return <Activation profile={profile} onActivated={() => window.location.reload()} />;
   }
