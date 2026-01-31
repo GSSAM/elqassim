@@ -24,9 +24,12 @@ const App = () => {
           const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
           if (userDoc.exists()) {
             setProfile(userDoc.data());
+          } else {
+            setProfile(null);
           }
         } catch (error) {
-          console.error("Error fetching profile:", error);
+          console.error("Auth status error:", error);
+          setProfile(null);
         }
       } else {
         setProfile(null);
