@@ -1,4 +1,3 @@
-
 import { initializeApp, getApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -13,9 +12,7 @@ const firebaseConfig = {
   measurementId: "G-GEV687KDKK"
 };
 
-// Initialize Firebase logic to prevent multiple initializations in development
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Export initialized services
 export const auth = getAuth(app);
 export const db = getFirestore(app);

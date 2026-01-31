@@ -1,4 +1,3 @@
-
 export enum UserRole {
   STUDENT = 'student',
   TEACHER = 'teacher',
@@ -17,24 +16,14 @@ export interface UserProfile {
   role: UserRole;
   level: EducationLevel;
   isActive: boolean;
-  activationCode: string | null;
-  activatedAt: string | null;
-  createdAt: string;
+  activatedAt?: any;
+  createdAt: any;
 }
 
 export interface Section {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   allowedRoles: UserRole[];
   allowedLevels: EducationLevel[];
-  contentUrl?: string;
-}
-
-export interface ActivationCode {
-  code: string;
-  role: UserRole;
-  level: EducationLevel;
-  isUsed: boolean;
-  usedBy?: string;
 }

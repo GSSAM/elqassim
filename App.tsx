@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -22,22 +21,26 @@ const App: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-          setProfile(userDoc.data() as UserProfile);
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            setProfile(userDoc.data() as UserProfile);
+          } else {
+            setProfile(null);
+          }
+        } catch (error) {
+          console.error("Auth profile error:", error);
         }
       } else {
         setProfile(null);
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
   if (loading) return <LoadingScreen />;
 
-  // User not logged in
   if (!user) {
     return view === 'login' ? (
       <Login onToggle={() => setView('register')} />
@@ -46,26 +49,23 @@ const App: React.FC = () => {
     );
   }
 
-  // User logged in but profile not loaded yet (edge case)
-  if (!profile) return <LoadingScreen />;
+  if (!profile) return <LoadingScreen message="جاري إعداد حسابك..." />;
 
-  // Account Activation check
   if (!profile.isActive) {
     return <Activation profile={profile} onActivated={() => window.location.reload()} />;
   }
 
-  // Main Authenticated Experience
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar profile={profile} />
       <main className="flex-grow container mx-auto px-4 py-8">
         {profile.role === 'admin' ? (
-          <AdminPanel profile={profile} />
+          <AdminPanel />
         ) : (
           <Dashboard profile={profile} />
         )}
       </main>
-      <footer className="bg-white border-t py-6 text-center text-gray-500 text-sm">
+      <footer className="bg-white border-t py-6 text-center text-gray-400 text-sm">
         جميع الحقوق محفوظة لمنصة التميز التعليمية &copy; {new Date().getFullYear()}
       </footer>
     </div>
