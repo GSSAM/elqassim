@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -67,8 +66,8 @@ const Login = ({ onToggle }) => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-100 px-4">
       <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 border border-white text-right">
         <div className="text-center mb-10">
-          <div className="inline-block p-4 bg-blue-600 rounded-2xl shadow-lg mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="inline-block p-4 bg-blue-600 rounded-2xl shadow-lg mb-4 text-white">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
             </svg>
@@ -92,7 +91,7 @@ const Login = ({ onToggle }) => {
             <input
               type="text"
               required
-              className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-0 outline-none transition-all bg-gray-50"
+              className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-0 outline-none transition-all bg-gray-50 text-right"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin أو email@example.com"
@@ -103,7 +102,7 @@ const Login = ({ onToggle }) => {
             <input
               type="password"
               required
-              className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-0 outline-none transition-all bg-gray-50"
+              className="w-full px-5 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-500 focus:ring-0 outline-none transition-all bg-gray-50 text-right"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
