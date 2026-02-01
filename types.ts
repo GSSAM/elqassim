@@ -1,7 +1,6 @@
 
 export enum UserRole {
   STUDENT = 'student',
-  TEACHER = 'teacher',
   ADMIN = 'admin'
 }
 
@@ -17,24 +16,30 @@ export interface UserProfile {
   role: UserRole;
   level: EducationLevel;
   isActive: boolean;
-  activationCode: string | null;
-  activatedAt: string | null;
-  createdAt: string;
+  subStart: any;
+  subEnd: any;
+  createdAt: any;
+  lastLogin?: any;
 }
 
-export interface Section {
+export type ContentType = 'lesson' | 'video' | 'live';
+
+export interface EducationalContent {
   id: string;
   title: string;
   description: string;
-  allowedRoles: UserRole[];
-  allowedLevels: EducationLevel[];
-  contentUrl?: string;
+  type: ContentType;
+  level: EducationLevel;
+  content: string; // HTML for lessons or URL for video/live
+  scheduledAt?: any; // For live streams
+  createdAt: any;
 }
 
 export interface ActivationCode {
   code: string;
-  role: UserRole;
+  durationDays: number;
   level: EducationLevel;
   isUsed: boolean;
   usedBy?: string;
+  createdAt: any;
 }
