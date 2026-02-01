@@ -44,6 +44,7 @@ const Activation: React.FC<Props> = ({ profile, onActivated }) => {
       await updateDoc(codeRef, {
         isUsed: true,
         usedBy: profile.uid,
+        usedByEmail: profile.email,
         usedAt: serverTimestamp()
       });
 
@@ -72,25 +73,18 @@ const Activation: React.FC<Props> = ({ profile, onActivated }) => {
             </svg>
           </div>
           <h2 className="text-2xl font-bold">تنشيط الاشتراك</h2>
-          <p className="text-blue-100 text-sm mt-2">أدخل كود التفعيل المكون من 6 أرقام أو رموز</p>
+          <p className="text-blue-100 text-sm mt-2">أدخل كود التفعيل المكون من 8 رموز</p>
         </div>
         
         <div className="p-8">
           {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm text-center font-bold border border-red-100">{error}</div>}
           
-          {profile.subEnd && (
-            <div className="bg-amber-50 text-amber-700 p-4 rounded-xl mb-6 text-sm text-center border border-amber-100">
-              <p className="font-bold">انتهى اشتراكك السابق في:</p>
-              <p className="font-mono">{profile.subEnd.toDate().toLocaleDateString('ar-EG')}</p>
-            </div>
-          )}
-
           <form onSubmit={handleActivate} className="space-y-6">
             <input
               type="text"
               required
               className="w-full text-center text-3xl font-mono p-5 rounded-2xl border-2 border-slate-100 outline-none focus:border-blue-500 transition-all uppercase placeholder-slate-200"
-              placeholder="XXXXXX"
+              placeholder="XXXXXXXX"
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />

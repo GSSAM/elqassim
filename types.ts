@@ -41,5 +41,7 @@ export interface ActivationCode {
   level: EducationLevel;
   isUsed: boolean;
   usedBy?: string;
+  usedByEmail?: string;
+  usedAt?: any;
   createdAt: any;
 }
