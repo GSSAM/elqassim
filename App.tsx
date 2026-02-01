@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -21,28 +22,22 @@ const App: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            setProfile(userDoc.data() as UserProfile);
-          } else {
-            // User authenticated but no profile found (rare edge case)
-            setProfile(null);
-          }
-        } catch (error) {
-          console.error("Auth error:", error);
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+          setProfile(userDoc.data() as UserProfile);
         }
       } else {
         setProfile(null);
       }
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <LoadingScreen message="جاري التحميل..." />;
+  if (loading) return <LoadingScreen />;
 
-  // Auth Flow
+  // User not logged in
   if (!user) {
     return view === 'login' ? (
       <Login onToggle={() => setView('register')} />
@@ -51,26 +46,26 @@ const App: React.FC = () => {
     );
   }
 
-  // Profile Loading (User logged in but profile fetch pending)
-  if (!profile) return <LoadingScreen message="جاري إعداد الملف الشخصي..." />;
+  // User logged in but profile not loaded yet (edge case)
+  if (!profile) return <LoadingScreen />;
 
-  // Activation Flow (Skip for admins, mandatory for students)
-  if (!profile.isActive && profile.role !== 'admin') {
+  // Account Activation check
+  if (!profile.isActive) {
     return <Activation profile={profile} onActivated={() => window.location.reload()} />;
   }
 
-  // Main App
+  // Main Authenticated Experience
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar profile={profile} />
       <main className="flex-grow container mx-auto px-4 py-8">
         {profile.role === 'admin' ? (
-          <AdminPanel />
+          <AdminPanel profile={profile} />
         ) : (
           <Dashboard profile={profile} />
         )}
       </main>
-      <footer className="bg-white border-t py-6 text-center text-slate-400 text-sm">
+      <footer className="bg-white border-t py-6 text-center text-gray-500 text-sm">
         جميع الحقوق محفوظة لمنصة التميز التعليمية &copy; {new Date().getFullYear()}
       </footer>
     </div>

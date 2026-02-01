@@ -1,9 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { UserProfile, Section } from '../types';
 
-const Dashboard: React.FC<{ profile: UserProfile }> = ({ profile }) => {
+interface Props {
+  profile: UserProfile;
+}
+
+const Dashboard: React.FC<Props> = ({ profile }) => {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,14 +16,24 @@ const Dashboard: React.FC<{ profile: UserProfile }> = ({ profile }) => {
     const fetchSections = async () => {
       setLoading(true);
       try {
-        const querySnapshot = await getDocs(query(collection(db, 'sections')));
-        const allSections = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Section));
+        const sectionsRef = collection(db, 'sections');
+        // Simple query for accessible sections
+        // In a real app, you might fetch all and filter client-side for better UX
+        // or use complex composite indices.
+        const q = query(sectionsRef);
+        const querySnapshot = await getDocs(q);
         
-        // Filter sections based on user role and level
+        const allSections = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Section[];
+
+        // Filter based on user's role and level
         const accessible = allSections.filter(s => 
-          s.allowedRoles.includes(profile.role) && 
+          (s.allowedRoles.includes(profile.role)) && 
           (s.allowedLevels.length === 0 || s.allowedLevels.includes(profile.level))
         );
+
         setSections(accessible);
       } catch (err) {
         console.error("Error fetching sections:", err);
@@ -26,60 +41,57 @@ const Dashboard: React.FC<{ profile: UserProfile }> = ({ profile }) => {
         setLoading(false);
       }
     };
+
     fetchSections();
   }, [profile]);
 
   return (
-    <div className="space-y-8 text-right">
-      <header className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div className="space-y-8">
+      <header className="bg-white p-6 rounded-2xl shadow-sm border flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">مرحباً بك، {profile.email.split('@')[0]}</h1>
-          <p className="text-slate-500 mt-1">الصف الدراسي: <span className="text-blue-600 font-bold">{profile.level}</span></p>
+          <h1 className="text-2xl font-bold text-gray-800">أهلاً بك، {profile.email.split('@')[0]}!</h1>
+          <p className="text-gray-500">مستوى: <span className="font-semibold text-blue-600">{profile.level}</span></p>
         </div>
-        <div className="bg-emerald-50 text-emerald-700 px-6 py-3 rounded-2xl font-bold text-sm border border-emerald-100 flex items-center gap-3">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </span>
-          حسابك نشط ومفعل
+        <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-100">
+          <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+          <span className="text-blue-700 text-sm font-bold">الحساب مفعل ومؤمن</span>
         </div>
       </header>
 
       <section>
-        <h2 className="text-xl font-bold mb-6 text-slate-800 flex items-center gap-2">
-          <span className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-lg">📚</span>
-          المواد والأقسام الدراسية
+        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          أقسامك الدراسية
         </h2>
 
         {loading ? (
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-             {[1, 2, 3].map(i => (
-               <div key={i} className="h-64 bg-white rounded-3xl animate-pulse border border-slate-100"></div>
-             ))}
-           </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map(n => (
+              <div key={n} className="h-48 bg-white animate-pulse rounded-2xl"></div>
+            ))}
+          </div>
         ) : sections.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sections.map(section => (
-              <div key={section.id} className="bg-white p-8 rounded-3xl border border-slate-100 hover:shadow-lg transition-all duration-300 group cursor-pointer hover:border-blue-200">
-                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">
-                  {section.icon || '📖'}
+              <div key={section.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 border group">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-3">{section.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed mb-6 h-10 line-clamp-2">
-                  {section.description || 'تصفح المحتوى التعليمي والدروس الخاصة بهذا القسم...'}
-                </p>
-                <button className="w-full bg-slate-50 py-4 rounded-xl font-bold text-slate-600 group-hover:bg-blue-600 group-hover:text-white transition-all flex items-center justify-center gap-2">
-                  <span>دخول القسم</span>
-                  <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <h3 className="text-lg font-bold mb-2">{section.title}</h3>
+                <p className="text-gray-500 text-sm mb-6 line-clamp-2">{section.description}</p>
+                <button className="w-full bg-gray-100 hover:bg-blue-600 hover:text-white text-gray-700 font-bold py-2 rounded-lg transition-all">
+                  دخول القسم
                 </button>
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center">
-            <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">📭</div>
-            <h3 className="font-bold text-slate-600">لا توجد أقسام متاحة حالياً</h3>
-            <p className="text-slate-400 text-sm mt-2">يرجى التحقق من مستواك الدراسي أو التواصل مع الإدارة.</p>
+          <div className="bg-white p-12 text-center rounded-2xl border border-dashed border-gray-300">
+            <p className="text-gray-400">لا توجد أقسام متاحة لمستواك الدراسي حالياً.</p>
           </div>
         )}
       </section>

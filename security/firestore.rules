@@ -1,25 +1,51 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
+    
+    // User data security
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      
+      // Allow creation only for new users, role is strictly enforced client-side but 
+      // rules here should ideally block 'admin' role if no existing admin.
       allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Prevent role tampering from client
       allow update: if request.auth != null && (
-        (request.auth.uid == userId && resource.data.isActive == false && request.resource.data.isActive == true) ||
-        isAdmin()
+        (request.auth.uid == userId && 
+         request.resource.data.role == resource.data.role && 
+         request.resource.data.isActive == true &&
+         resource.data.isActive == false) || // Allow self-activation
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') // Admin can do anything
       );
     }
+
+    // Activation Codes
     match /activationCodes/{codeId} {
-      allow read: if request.auth != null;
-      allow update: if request.auth != null && resource.data.isUsed == false;
-      allow create, delete: if isAdmin();
+      allow read: if request.auth != null; // User needs to check if code exists
+      
+      // Only users can mark as used during activation process
+      allow update: if request.auth != null && 
+                    resource.data.isUsed == false && 
+                    request.resource.data.isUsed == true;
+      
+      // Only admin can create or delete codes
+      allow create, delete: if request.auth != null && 
+                             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
+
+    // Content Sections
     match /sections/{sectionId} {
-      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true;
-      allow write: if isAdmin();
+      allow read: if request.auth != null && 
+                   get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive == true &&
+                   (
+                     request.auth.uid in resource.data.allowedRoles ||
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in resource.data.allowedRoles
+                   );
+      allow write: if request.auth != null && 
+                    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }

@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth } from '../firebaseConfig';
-import { UserProfile } from '../types';
 
-interface Props { profile: UserProfile; onActivated: () => void; }
+import React, { useState } from 'react';
+import { doc, getDoc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
+import { UserProfile, ActivationCode } from '../types';
+
+interface Props {
+  profile: UserProfile;
+  onActivated: () => void;
+}
 
 const Activation: React.FC<Props> = ({ profile, onActivated }) => {
   const [code, setCode] = useState('');
@@ -12,99 +16,101 @@ const Activation: React.FC<Props> = ({ profile, onActivated }) => {
 
   const handleActivate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanCode = code.trim().toUpperCase();
-    if (cleanCode.length < 4) return;
-    
     setLoading(true);
     setError('');
 
     try {
-      const codeRef = doc(db, 'activationCodes', cleanCode);
+      // Check if the code exists in a dedicated 'activationCodes' collection
+      const codeRef = doc(db, 'activationCodes', code);
       const codeSnap = await getDoc(codeRef);
 
       if (!codeSnap.exists()) {
-        setError('كود التفعيل غير صحيح أو غير موجود.');
+        setError('كود التفعيل غير صحيح.');
         setLoading(false);
         return;
       }
 
-      const codeData = codeSnap.data();
+      const codeData = codeSnap.data() as ActivationCode;
+
       if (codeData.isUsed) {
-        setError('عذراً، هذا الكود مستخدم بالفعل.');
+        setError('هذا الكود تم استخدامه من قبل.');
         setLoading(false);
         return;
       }
 
-      // Execute activation
+      // Secure update: We perform updates that should be validated by Firestore rules
       // 1. Mark code as used
-      await updateDoc(codeRef, { 
-        isUsed: true, 
-        usedBy: profile.uid, 
-        usedAt: serverTimestamp() 
+      await updateDoc(codeRef, {
+        isUsed: true,
+        usedBy: profile.uid
       });
-      
+
       // 2. Activate user
-      await updateDoc(doc(db, 'users', profile.uid), { 
-        isActive: true, 
+      await updateDoc(doc(db, 'users', profile.uid), {
+        isActive: true,
         activatedAt: serverTimestamp(),
-        // Update level if the code carries a specific level override
+        // Potentially update level/role if code is role-specific
+        role: codeData.role || profile.role,
         level: codeData.level || profile.level
       });
 
       onActivated();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة لاحقاً.');
+      setError('حدث خطأ أثناء التفعيل. يرجى المحاولة لاحقاً.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogout = () => auth.signOut();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 text-right">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
-        <div className="bg-orange-500 p-6 text-center">
-          <h2 className="text-2xl font-bold text-white">تفعيل الحساب</h2>
-          <p className="text-orange-100 text-sm mt-1">الخطوة الأخيرة للوصول إلى المحتوى</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-yellow-500 py-4 text-center">
+          <h2 className="text-white text-xl font-bold">تفعيل الحساب مطلوب</h2>
         </div>
         
         <div className="p-8">
-          <p className="text-slate-500 mb-8 text-sm leading-relaxed text-center font-medium">
-            أهلاً بك {profile.email}.<br/>
-            لإتمام تسجيلك، يرجى إدخال كود التفعيل الخاص بك.
+          <p className="text-gray-600 mb-6 text-center">
+            يرجى إدخال كود التفعيل الذي استلمته من إدارة المنصة للدخول إلى الأقسام التعليمية.
           </p>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm flex items-center justify-center gap-2 border border-red-100 font-bold">
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm text-center">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleActivate} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-400 block mr-2">كود التفعيل</label>
-              <input 
-                type="text" 
-                required 
-                className="w-full text-center text-3xl font-mono p-5 rounded-2xl border-2 border-slate-200 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all uppercase placeholder-slate-300 text-slate-700" 
-                placeholder="ABCD-1234" 
-                value={code} 
-                onChange={(e) => setCode(e.target.value)} 
-              />
-            </div>
-            <button 
-              disabled={loading} 
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-5 rounded-2xl shadow-lg shadow-orange-200 transition-all active:scale-95 disabled:opacity-70"
+          <form onSubmit={handleActivate} className="space-y-4">
+            <input
+              type="text"
+              required
+              className="w-full text-center text-2xl tracking-widest px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-yellow-500 outline-none transition uppercase"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="123456"
+              maxLength={6}
+            />
+            
+            <button
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-transform active:scale-95 shadow-lg"
             >
-              {loading ? 'جاري التحقق...' : 'تفعيل الحساب الآن'}
+              {loading ? 'جاري التحقق...' : 'تفعيل الآن'}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <button onClick={() => auth.signOut()} className="text-slate-400 text-sm hover:text-red-500 transition-colors font-bold">تسجيل الخروج</button>
+          <div className="mt-8 border-t pt-4 text-center">
+            <button onClick={handleLogout} className="text-gray-500 text-sm hover:underline">
+              تسجيل الخروج
+            </button>
           </div>
         </div>
       </div>
+      
+      <p className="mt-6 text-sm text-gray-400">تحتاج مساعدة؟ تواصل مع الدعم الفني</p>
     </div>
   );
 };
